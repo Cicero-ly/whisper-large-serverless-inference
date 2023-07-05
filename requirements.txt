@@ -1,3 +1,2 @@
 potassium
-sentence-transformers==2.2.2
-accelerate
+git+https://github.com/openai/whisper.git

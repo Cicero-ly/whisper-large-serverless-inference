@@ -1,15 +1,15 @@
 from potassium import Potassium, Request, Response
 
-from sentence_transformers import SentenceTransformer
-from sklearn.preprocessing import normalize
+import whisper
 
 app = Potassium("my_app")
 
 # @app.init runs at startup, and loads models into the app's context
 @app.init
 def init():
-    model = SentenceTransformer("sentence-transformers/paraphrase-mpnet-base-v2")
-   
+    #medium, large-v1, large-v2
+    model_name = "large-v2"
+    model = whisper.load_model(model_name)   
     context = {
         "model": model
     }
@@ -19,17 +19,21 @@ def init():
 # @app.handler runs for every call
 @app.handler()
 def handler(context: dict, request: Request) -> Response:
-    prompt = request.json.get("prompt")
+    mp3BytesString = request.json.get("mp3BytesString")
     model = context.get("model")
-    # Run the model
-    sentence_embeddings = model.encode(prompt)
-    normalized_embeddings = normalize(sentence_embeddings)
 
-    # Convert the output array to a list
-    output = normalized_embeddings.tolist()
+    # download the audio file from mp3 string
+    mp3Bytes = BytesIO(base64.b64decode(mp3BytesString.encode("ISO-8859-1")))
+    with open('input.mp3','wb') as file:
+        file.write(mp3Bytes.getbuffer())
+    
+    # Run the model
+    result = model.transcribe("input.mp3")
+    output = result["text"]
+
 
     return Response(
-        json = {"data": output}, 
+        json = {"text": output}, 
         status=200
     )
 

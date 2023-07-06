@@ -1,5 +1,7 @@
 from potassium import Potassium, Request, Response
-
+import os
+import base64
+from io import BytesIO
 import whisper
 
 app = Potassium("my_app")
